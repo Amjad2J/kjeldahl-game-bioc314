@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kjeldahl lab game</title>
+<style>
+:root{--bg:#fff;--ink:#1f1e1d;--mut:#5f5e5a;--line:#d3d1c7;--card:#f6f5f0;--ok:#3B6D11;--bad:#A32D2D;--ac:#534AB7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1f1e1d;--ink:#f1efe8;--mut:#b4b2a9;--line:#444441;--card:#2c2c2a;--ok:#97C459;--bad:#F09595;--ac:#AFA9EC}}
+:root[data-theme="dark"]{--bg:#1f1e1d;--ink:#f1efe8;--mut:#b4b2a9;--line:#444441;--card:#2c2c2a;--ok:#97C459;--bad:#F09595;--ac:#AFA9EC}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:21px;font-weight:500;margin:0}h2{font-size:18px;font-weight:500;margin:6px 0}
+.bar{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mut);margin:8px 0 12px}
+.pg{height:6px;background:var(--line);border-radius:3px;margin-bottom:14px}.pg i{display:block;height:100%;background:var(--ac);border-radius:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+svg{display:block;margin:0 auto;max-width:100%}svg path,svg circle,svg rect{vector-effect:non-scaling-stroke}
+.o{display:block;width:100%;text-align:left;margin:8px 0;padding:11px 12px;font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.o:active{transform:scale(.99)}
+.b{font:inherit;font-size:15px;padding:10px 16px;border-radius:10px;border:1px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;margin:6px 6px 0 0}
+.b.g{background:var(--bg);color:var(--ink);border-color:var(--line)}
+.fb{min-height:24px;font-size:14px;font-weight:500;margin:8px 0}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mut{color:var(--mut);font-size:14px}
+input[type=number]{font:inherit;width:110px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.sig{text-align:right;color:var(--mut);font-size:12px;margin-top:28px;border-top:1px solid var(--line);padding-top:8px}
+.rd{display:flex;gap:10px;flex-wrap:wrap;font-size:14px;margin:6px 0}.rd span{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+</style></head><body><main>
+<h1>Kjeldahl lab game</h1>
+<div class="bar"><span id="lv"></span><span id="sc"></span></div>
+<div class="pg"><i id="pb"></i></div>
+<div id="g"></div>
+<p class="sig">Miss.Amjad · BIOC314</p>
+</main>
+<script>
+var $=function(i){return document.getElementById(i)},G=$('g');
+var st={l:0,s:0,vs:0,EP:0};
+function lerp(a,b,f){return a.map(function(x,k){return Math.round(x+(b[k]-x)*f)})}
+function rgb(a){return 'rgb('+a.join(',')+')'}
+function hud(){$('lv').textContent=st.l<4?'Level '+(st.l+1)+' of 4':'Finished';$('sc').textContent='Score '+st.s;$('pb').style.width=(st.l*25)+'%'}
+function add(n){st.s=Math.max(0,st.s+n);hud()}
+function flask(col,lvl){return '<svg viewBox="0 0 200 190" width="190" role="img"><title>Flask</title><defs><clipPath id="k"><circle cx="100" cy="125" r="60"/></clipPath></defs><rect x="30" y="'+(lvl||118)+'" width="140" height="90" fill="'+col+'" clip-path="url(#k)"/><circle cx="100" cy="125" r="60" fill="none" stroke="var(--mut)" stroke-width="2"/><path d="M86 68V14M114 68V14M80 14H120" fill="none" stroke="var(--mut)" stroke-width="2"/></svg>'}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+var L1=[['#E3D3AE','Sample, H₂SO₄ and K₂SO₄ catalyst are in the flask. What do you do first?','Start heating','Add NaOH','Digestion needs heat and acid. NaOH comes later, in distillation.'],
+['#171717','Black: the organic matter is charring. What next?','Continue at low temperature until boiling ends','Raise to maximum now','Go gently first, or the acid can foam up.'],
+['#6A4B2B','Boiling has ended (brown). What next?','Raise the temperature until colorless','Cool and stop here','Keep heating hotter until the liquid is colorless.'],
+['#EAF2F3','Colorless: digestion is complete. What next?','Cool, transfer to a 250 mL flask and fill with water','Add more acid','Dilute to 250 mL. The blank is done the same way, without sample.']];
+function lvl1(i){i=i||0;var q=L1[i],o=shuffle([[q[2],1],[q[3],0]]);
+G.innerHTML='<div class="card"><h2>Digestion</h2>'+flask(q[0])+'<p>'+q[1]+'</p>'+o.map(function(x){return '<button class="o" data-r="'+x[1]+'">'+x[0]+'</button>'}).join('')+'<div class="fb" id="fb"></div></div>';
+G.querySelectorAll('.o').forEach(function(b){b.onclick=function(){if(b.dataset.r=='1'){add(10);if(i<3)lvl1(i+1);else{$('fb').className='fb ok';$('fb').textContent='Correct. Nitrogen is now ammonium sulfate.';nxt()}}else{add(-5);$('fb').className='fb bad';$('fb').textContent='Not quite. '+q[4]}}})}
+function nxt(){var b=document.createElement('button');b.className='b';b.textContent='Next level';b.onclick=function(){st.l++;hud();[0,lvl2,lvl3,lvl4,end][st.l]()};$('fb').parentNode.appendChild(b);G.querySelectorAll('.o').forEach(function(x){x.disabled=true})}
+var P=[154,95,196],GR=[77,170,99],GY=[143,168,154],tm=null;
+function lvl2(){var t=0,naoh=false,done=false;
+G.innerHTML='<div class="card"><h2>Distillation</h2><div id="fl">'+flask('#EAF2F3')+'</div><p>Make the digest alkaline, then distill. Stop when the receiving flask is fully green (about 15 min).</p><button class="b g" id="a1">Add 10 mL NaOH</button><button class="b" id="a2">Start</button><button class="b g" id="a3">Stop</button><div class="rd"><span id="tt">0.0 min</span></div><div class="fb" id="fb"></div></div>';
+function draw(){var f=Math.min(Math.max((t-1)/12,0),1);$('fl').innerHTML=flask(rgb(lerp(P,GR,f)),118-t*1.5);$('tt').textContent=t.toFixed(1)+' min'}
+$('fl').innerHTML=flask('#9A5FC4');
+$('a1').onclick=function(){naoh=true;$('fb').className='fb ok';$('fb').textContent='NaOH added: ammonia gas is released. Now start.'};
+$('a2').onclick=function(){if(!naoh){add(-5);$('fb').className='fb bad';$('fb').textContent='Add NaOH first, so ammonium becomes ammonia gas.';return}clearInterval(tm);t=0;tm=setInterval(function(){t+=.2;draw();if(t>=20){clearInterval(tm);ev()}},120)};
+function ev(){clearInterval(tm);var fb=$('fb');if(done)return;if(t>=13&&t<=17){done=true;add(20);fb.className='fb ok';fb.textContent='Perfect. Green means the ammonia is captured as borate.';$('a2').disabled=true;$('a3').disabled=true;nxt()}else if(t<13){add(-3);fb.className='fb bad';fb.textContent='Too early: the receiver is not fully green. Start again.'}else{add(-3);fb.className='fb bad';fb.textContent='Too long: it turned green earlier. Start again.'}}
+$('a3').onclick=function(){if(t>0)ev()}}
+function lvl3(){var v=0;st.EP=Math.round((4+Math.random()*4)*10)/10;
+G.innerHTML='<div class="card"><h2>Titration</h2><div id="fl"></div><p>Add 0.02 N HCl until the green solution turns purple, then record the reading.</p><button class="b g" id="d1">Add 0.1 mL</button><button class="b g" id="d2">Add 1 mL</button><button class="b" id="d3">Record</button><button class="b g" id="d4">Reset</button><div class="rd"><span id="vv"></span></div><div class="fb" id="fb"></div></div>';
+function draw(){var f=v/st.EP,c=f<.85?lerp(GR,GY,f/.85):(f<1?lerp(GY,P,(f-.85)/.15):P);
+$('fl').innerHTML='<svg viewBox="0 0 200 250" width="190" role="img"><title>Burette and flask</title><defs><clipPath id="k"><circle cx="100" cy="190" r="45"/></clipPath></defs><rect x="91" y="'+(10+10*Math.min(v,10))+'" width="18" height="'+(100-10*Math.min(v,10))+'" fill="#B5D4F4" fill-opacity=".7"/><rect x="90" y="10" width="20" height="104" fill="none" stroke="var(--mut)" stroke-width="2"/><path d="M100 114V150" stroke="var(--mut)" stroke-width="2"/><rect x="40" y="'+(190-v)+'" width="120" height="60" fill="'+rgb(c)+'" clip-path="url(#k)"/><circle cx="100" cy="190" r="45" fill="none" stroke="var(--mut)" stroke-width="2"/><path d="M88 150V152M112 150V152" stroke="var(--mut)" stroke-width="2"/></svg>';
+$('vv').textContent='Burette: '+v.toFixed(1)+' mL'}
+function go(d){v=Math.min(Math.round((v+d)*10)/10,12);draw();if(v>st.EP+.6){add(-5);$('fb').className='fb bad';$('fb').textContent='Overshot. Start again and add slowly near the end.';v=0;draw()}}
+$('d1').onclick=function(){go(.1)};$('d2').onclick=function(){go(1)};$('d4').onclick=function(){v=0;draw();$('fb').textContent=''};
+$('d3').onclick=function(){var fb=$('fb');if(Math.abs(v-st.EP)<=.2){st.vs=v;add(20);fb.className='fb ok';fb.textContent='Well done. Sample titre = '+v.toFixed(1)+' mL (blank = 0.5 mL).';$('d3').disabled=true;nxt()}else if(v<st.EP-.2){add(-3);fb.className='fb bad';fb.textContent='Not purple yet. Keep adding.'}else{add(-3);fb.className='fb bad';fb.textContent='You passed the end point. Reset and go slower.'}};draw()}
+function lvl4(){var net=Math.round((st.vs-.5)*10)/10,ans=net*4.375;
+G.innerHTML='<div class="card"><h2>Calculation</h2><div class="rd"><span>Sample titre '+st.vs.toFixed(1)+' mL</span><span>Blank 0.5 mL</span><span>Sample 1 g</span><span>Factor 6.25</span></div><p>What is the % crude protein? Use 1 mL HCl = 0.00028 g N, × 250, ÷ 10 mL pipetted.</p><input type="number" id="an" step="0.1" placeholder="e.g. 20.5"> % <button class="b" id="ck">Check</button><button class="b g" id="hn">Show steps</button><div class="fb" id="fb"></div><p class="mut" id="sp"></p></div>';
+$('hn').onclick=function(){add(-2);$('sp').innerHTML='Net HCl = '+net.toFixed(1)+' mL<br>g N = '+net.toFixed(1)+' × 0.00028 × 250 ÷ 10 = '+(net*.00028*25).toFixed(4)+' g<br>% N = '+(net*.00028*25*100).toFixed(2)+' %<br>% protein = % N × 6.25'};
+$('ck').onclick=function(){var a=parseFloat($('an').value),fb=$('fb');if(isNaN(a)){fb.className='fb bad';fb.textContent='Enter a number first.';return}
+if(Math.abs(a-ans)<=.3){add(30);fb.className='fb ok';fb.textContent='Correct: '+ans.toFixed(1)+' % crude protein.';$('ck').disabled=true;nxt()}else{add(-3);fb.className='fb bad';fb.textContent='Not quite. Try again or tap Show steps.'}}}
+function end(){var m=110,n=st.s>=95?3:(st.s>=70?2:1);
+G.innerHTML='<div class="card" style="text-align:center"><h2>Lab complete</h2><p style="font-size:30px;margin:4px 0;color:var(--ac)">'+'★'.repeat(n)+'☆'.repeat(3-n)+'</p><p>Final score: <b>'+st.s+'</b> of '+m+'</p><p class="mut">Digestion, distillation, titration and calculation all done.</p><button class="b" id="rs">Play again</button></div>'+''; $('rs').onclick=function(){st={l:0,s:0,vs:0,EP:0};hud();lvl1()}}
+hud();lvl1();
+</script></body></html>
